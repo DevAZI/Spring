@@ -1,7 +1,9 @@
 import java.util.Optional;
-
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 @RestController
-@RequestMapping("/coffee")
+@RequestMapping("/coffees")
 class RestApiDemoController{
     private List<Coffee> coffees = new ArrayList<>();
 
@@ -13,11 +15,8 @@ class RestApiDemoController{
 
         ));
     }
-    // @RequestMapping(value = "/coffees", method = RequestMethod.GET) //getCoffee 메서드가 get요청의 url에만 응답하도록
-    // Iterable<Coffee> getCoffees(){
-    //     return coffees;
-    // }
-
+    
+    
     // GetMapping으로 개선
     @GetMapping
     Iterable<Coffee> getCoffees(){
