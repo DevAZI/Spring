@@ -1,9 +1,19 @@
 package com.example.demo;
 
-import java.util.UUID;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import javax.persistence.Entity;    //dependancy 추가 해야함
+import javax.persistence.Id;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @SpringBootApplication
 public class DemoApplication {
@@ -14,24 +24,97 @@ public class DemoApplication {
 
 }
 
-class Coffee{
-	private final String id; //특정 커피 종류의 고유 식별값	
-	private String name; //커피(종류) 이름
 
-	public Coffee (String id, String name){
-		this.id = UUID.randomUUID().toString();
-		this.name = name;
-		//무작위로 생성된 고유한 식별자를 반환합니다. toString() 메서드를 호출하여 UUID를 문자열로 변환
-		//ex) "cbb44562-7da4-4c0c-a5bc-57f84d0a01c3"
+
+
+@RestController
+@RequestMapping("/coffees")
+class RestApiDemoController {
+	private List<Coffee> coffees = new ArrayList<>();
+
+	public RestApiDemoController() {
+		coffees.addAll(List.of(
+				new Coffee("Café Cereza"),
+				new Coffee("Café Ganador"),
+				new Coffee("Café Lareño"),
+				new Coffee("Café Três Pontas")
+		));
 	}
-	public String getId(){
-		return id;
+
+	@GetMapping
+	Iterable<Coffee> getCoffees() {
+		return coffees;
 	}
-	public String getName(){
-		return name;
+
+	@GetMapping("/{id}")
+	Optional<Coffee> getCoffeeById(@PathVariable String id) {
+		for (Coffee c: coffees) {
+			if (c.getId().equals(id)) {
+				return Optional.of(c);
+			}
+		}
+
+		return Optional.empty();
 	}
-	public void setName(String name){
-		this.name = name;
+
+	@PostMapping
+	Coffee postCoffee(@RequestBody Coffee coffee) {
+		coffees.add(coffee);
+		return coffee;
+	}
+
+	@PutMapping("/{id}")
+	ResponseEntity<Coffee> putCoffee(@PathVariable String id,
+									 @RequestBody Coffee coffee) {
+		int coffeeIndex = -1;
+
+		for (Coffee c: coffees) {
+			if (c.getId().equals(id)) {
+				coffeeIndex = coffees.indexOf(c);
+				coffees.set(coffeeIndex, coffee);
+			}
+		}
+
+		return (coffeeIndex == -1) ?
+				new ResponseEntity<>(postCoffee(coffee), HttpStatus.CREATED) :
+				new ResponseEntity<>(coffee, HttpStatus.OK);
+	}
+
+	@DeleteMapping("/{id}")
+	void deleteCoffee(@PathVariable String id) {
+		coffees.removeIf(c -> c.getId().equals(id));
 	}
 }
+@Entity
+class Coffee {
+    @Id
+	private String id;
+	private String name;
 
+	public Coffee(String id, String name) {
+		this.id = id;
+		this.name = name;
+	}
+    public Coffee() {
+    this.id = UUID.randomUUID().toString();
+    }
+	public Coffee(String name) {
+        
+		this(UUID.randomUUID().toString(), name);
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+    public void setId(String id){
+        this.id = id;
+    }
+}
