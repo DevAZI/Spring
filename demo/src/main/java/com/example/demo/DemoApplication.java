@@ -1,11 +1,18 @@
 package com.example.demo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.PostConstruct;
@@ -16,16 +23,26 @@ import java.util.Optional;
 import java.util.UUID;
 
 @SpringBootApplication
-
+@ConfigurationPropertiesScan
+@EnableJpaRepositories
+@ComponentScan(basePackages = {"com.example.demo"})
 public class DemoApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(DemoApplication.class, args);
 	}
+	@Bean
+	@ConfigurationProperties(prefix = "droid")
+		Droid creatDroid(){
+			return new Droid();
+		}
+	
+
 @Component
 class DataLoader {
 	private final CoffeeRepository coffeeRepository;
 
+	@Autowired
 	public DataLoader(CoffeeRepository coffeeRepository) {
 		this.coffeeRepository = coffeeRepository;
 	}
@@ -80,7 +97,12 @@ class RestApiDemoController {
 	}
 }
 
-interface CoffeeRepository extends CrudRepository<Coffee, String> {}
+
+@Repository
+public interface CoffeeRepository extends JpaRepository<Coffee, String> {
+    
+}
+
 
 @Entity
 class Coffee {
@@ -119,12 +141,57 @@ class Coffee {
 	@RestController
 	@RequestMapping("/greeting")
 	class GreetingController{
-		@Value("$greeting-name: Mirage")
-		private String name;
+		private final Greeting greeting;
 
+		public GreetingController(Greeting greeting ){	
+			this.greeting = greeting;
+		}
 		@GetMapping
 		String getGreeting(){
-			return name;
+			return greeting.name;
+		}
+		@GetMapping
+		String getNameAndCoffee(){
+			return greeting.getCoffee();
 		}
 	}
+	@Component
+	@ConfigurationProperties(prefix = "greeting")
+	class Greeting{
+	private String name;
+	private String coffee;
+
+	public String getName(){
+		return name;
+	}
+	public void setname(String name){
+		this.name = name;
+	}
+	public String getCoffee(){
+		return coffee;
+	}
+	public void setCoffee(String Coffee){
+		this.coffee = coffee;
+	}
+
+	}
+
+	class Droid{
+		private String id, description;
+
+		public String getId(){
+			return id;
+		}
+		public void setId(String id){
+			this.id = id;
+		}
+		public String getDescription(){
+			return description;
+		}
+		public void setDescription(String description){
+			this.description = description;
+		}
+	}
+
+
 }
