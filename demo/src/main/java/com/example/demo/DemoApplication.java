@@ -3,6 +3,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,7 @@ public class DemoApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(DemoApplication.class, args);
 	}
+}
 @Component
 class DataLoader {
 	private final CoffeeRepository coffeeRepository;
@@ -79,13 +81,14 @@ class RestApiDemoController {
 		coffeeRepository.deleteById(id);
 	}
 }
-
-interface CoffeeRepository extends CrudRepository<Coffee, String> {}
+// @Repository
+interface CoffeeRepository extends JpaRepository<Coffee, String> {}
 
 @Entity
 class Coffee {
 	@Id
 	private String id;
+
 	private String name;
 
 	public Coffee() {
@@ -115,16 +118,15 @@ class Coffee {
 	public void setName(String name) {
 		this.name = name;
 	}
-	}
-	@RestController
-	@RequestMapping("/greeting")
-	class GreetingController{
-		@Value("$greeting-name: Mirage")
-		private String name;
+}
+@RestController
+@RequestMapping("/greeting")
+class GreetingController{
+	@Value("$greeting-name: Mirage")
+	private String name;
 
-		@GetMapping
-		String getGreeting(){
-			return name;
-		}
+	@GetMapping
+	String getGreeting(){
+		return name;
 	}
 }
