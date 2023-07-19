@@ -24,8 +24,6 @@ import java.util.UUID;
 
 @SpringBootApplication
 @ConfigurationPropertiesScan
-@EnableJpaRepositories
-@ComponentScan(basePackages = {"com.example.demo"})
 public class DemoApplication {
 
 	public static void main(String[] args) {
@@ -37,7 +35,7 @@ public class DemoApplication {
 			return new Droid();
 		}
 	
-
+	}
 @Component
 class DataLoader {
 	private final CoffeeRepository coffeeRepository;
@@ -98,8 +96,7 @@ class RestApiDemoController {
 }
 
 
-@Repository
-public interface CoffeeRepository extends JpaRepository<Coffee, String> {
+interface CoffeeRepository extends JpaRepository<Coffee, String> {
     
 }
 
@@ -148,9 +145,9 @@ class Coffee {
 		}
 		@GetMapping
 		String getGreeting(){
-			return greeting.name;
+			return greeting.getName();
 		}
-		@GetMapping
+		@GetMapping("/coffee")
 		String getNameAndCoffee(){
 			return greeting.getCoffee();
 		}
@@ -176,6 +173,18 @@ class Coffee {
 
 	}
 
+	@RestController
+	@RequestMapping("/droid")
+	class DroidController{
+		private final Droid droid;
+		public DroidController(Droid droid){
+			this.droid = droid;			
+		}
+		@GetMapping
+		Droid getDroid(){
+			return droid;
+		}
+	}
 	class Droid{
 		private String id, description;
 
@@ -194,4 +203,3 @@ class Coffee {
 	}
 
 
-}
